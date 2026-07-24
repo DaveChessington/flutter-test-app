@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:my_app/navigation.dart';
 import 'package:my_app/register.dart';
+import 'package:my_app/role.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -23,9 +25,7 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Login"),
-      ),
+      appBar: AppBar(title: const Text("Login")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -62,9 +62,25 @@ class _LoginState extends State<Login> {
               onPressed: () {
                 print("Email: ${_userController.text}");
                 print("Password: ${_passController.text}");
+                // call the auth service
+                //simulate login
+                Role? rol;
+                if (_userController.text == "user") {
+                  rol = Role.USER;
+                } else if (_userController.text == "admin") {
+                  rol = Role.ADMIN;
+                }
+                if (rol != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>Navigation(chosenRole: rol??Role.USER,)),
+                  );
+                } else {
+                  print("error crednciales invalidas");
+                }
               },
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50), 
+                minimumSize: const Size.fromHeight(50),
               ),
               child: const Text("Login"),
             ),
