@@ -3,8 +3,9 @@ import 'package:my_app/destinations.dart';
 import 'package:my_app/role.dart';
 
 class Navigation extends StatefulWidget {
-  const Navigation({super.key, required this.chosenRole});
+  const Navigation({super.key, required this.chosenRole, required this.id});
   final Role chosenRole;
+  final int id;
 
   @override
   State<StatefulWidget> createState() => _NavigationState();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:my_app/auth/auth_service.dart';
 import 'package:my_app/navigation.dart';
 import 'package:my_app/register.dart';
 import 'package:my_app/role.dart';
@@ -59,24 +60,37 @@ class _LoginState extends State<Login> {
             ),
             const SizedBox(height: 25),
             ElevatedButton(
-              onPressed: () {
-                print("Email: ${_userController.text}");
-                print("Password: ${_passController.text}");
-                // call the auth service
-                //simulate login
-                Role? rol;
-                if (_userController.text == "user") {
-                  rol = Role.USER;
-                } else if (_userController.text == "admin") {
-                  rol = Role.ADMIN;
-                }
-                if (rol != null) {
+              onPressed: () async {
+                try {
+                  if (_userController.text.isEmpty ||
+                      _passController.text.isEmpty) {
+                    throw Exception("email y contraseña requeridos");
+                  }
+
+                  print("Email: ${_userController.text}");
+                  print("Password: ${_passController.text}");
+
+                  AuthService auth = AuthService();
+                  var response = await auth.login(
+                    _userController.text,
+                    _passController.text,
+                  );
+
+                  Role rol = Role.values.byName(response["user"]["role"]);
+                  int id = response["user"]["id"];
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) =>Navigation(chosenRole: rol??Role.USER,)),
+                    MaterialPageRoute(
+                      builder: (context) => Navigation(chosenRole: rol, id: id),
+                    ),
                   );
-                } else {
-                  print("error crednciales invalidas");
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error: $e'),
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
                 }
               },
               style: ElevatedButton.styleFrom(

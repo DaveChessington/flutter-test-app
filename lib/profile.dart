@@ -94,6 +94,7 @@ class _ProfileState extends State<Profile> {
                   Text(example.role.name),
                 ],
               ),
+              const SizedBox(width: 15),
               Column(
                 children: [
                   const Text(
@@ -112,27 +113,39 @@ class _ProfileState extends State<Profile> {
           ),
 
           const SizedBox(height: 15),
-          const Text(
-            "Member Since",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.blueGrey,
-            ),
+          Row(
+            children: [
+              Column(
+                children: [
+                  const Text(
+                    "Member Since",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueGrey,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(example.createdAt ?? "N/A"),
+                ],
+              ),
+              const SizedBox(width: 15),
+              Column(
+                children: [
+                  const Text(
+                    "Last Updated",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueGrey,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(example.updatedAt ?? "N/A"),
+                ],
+              ),
+            ],
           ),
-          const SizedBox(height: 5),
-          Text(example.createdAt ?? "N/A"),
-          const SizedBox(height: 15),
-          const Text(
-            "Last Updated",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.blueGrey,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(example.updatedAt ?? "N/A"),
           const SizedBox(height: 15),
           const Divider(
             color: Colors.grey,
