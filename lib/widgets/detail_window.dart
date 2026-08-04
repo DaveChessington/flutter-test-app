@@ -1,16 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/models/User.dart';
 
 class DetailScreen extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final Map<String, Map<IconData, dynamic>> staticInfo;
+  final User user;
 
-  const DetailScreen({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.staticInfo,
-  });
+  const DetailScreen({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -35,14 +29,14 @@ class DetailScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 10),
             Text(
-              title,
+              user.name ?? "",
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 2),
             Row(
               children: [
                 Text(
-                  subtitle,
+                  user.email ?? "",
                   style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                 ),
               ],
@@ -50,7 +44,6 @@ class DetailScreen extends StatelessWidget {
 
             const SizedBox(height: 18),
 
-            // Información en tabla
             Container(
               decoration: BoxDecoration(
                 border: Border.all(
@@ -61,8 +54,25 @@ class DetailScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  for (var i in staticInfo.entries)
-                    _infoFila(i.value.keys.first, i.key, i.value.values.first),
+                  _infoFila(Icons.person, 'Nombre', user.name ?? ""),
+                  _infoFila(Icons.email, 'Correo', user.email ?? ""),
+                  _infoFilaBadge(user.isAproved),
+                  _infoFila(Icons.person_pin, 'Rol', user.role.name),
+                  _infoFila(
+                    Icons.calendar_today,
+                    'Fecha de creación',
+                    user.createdAt ?? "",
+                  ),
+                  _infoFila(
+                    Icons.update,
+                    'Fecha de actualización',
+                    user.updatedAt ?? "",
+                  ),
+                  _infoFila(
+                    Icons.delete,
+                    'Fecha de eliminación',
+                    user.deletedAt ?? "",
+                  ),
                 ],
               ),
             ),

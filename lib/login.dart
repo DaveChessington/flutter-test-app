@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:my_app/auth/auth_service.dart';
+import 'package:my_app/API/api_service.dart';
 import 'package:my_app/navigation.dart';
 import 'package:my_app/register.dart';
 import 'package:my_app/role.dart';
@@ -70,7 +70,7 @@ class _LoginState extends State<Login> {
                   print("Email: ${_userController.text}");
                   print("Password: ${_passController.text}");
 
-                  AuthService auth = AuthService();
+                  ApiService auth = ApiService();
                   var response = await auth.login(
                     _userController.text,
                     _passController.text,
