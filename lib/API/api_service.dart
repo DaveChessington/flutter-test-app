@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_app/models/User.dart';
 
@@ -67,13 +68,14 @@ class ApiService {
     }
   }
 
-  Future getAvatar(int id) async {
+  Future<ImageProvider?> getAvatar(int id) async {
     try {
       final response = await http.get(
         Uri.parse('$baseURL/users/profile_photo/$id'),
       );
       if (response.statusCode == 200) {
-        return response.body;
+        // Use MemoryImage with the response bytes for binary image data
+        return MemoryImage(response.bodyBytes);
       } else {
         print('Server Error: ${response.statusCode}');
         return null;
@@ -81,6 +83,25 @@ class ApiService {
     } catch (e) {
       print('Network Error: $e');
       return null;
+    }
+  }
+
+  Future addUser(User user) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseURL/users'),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode(user.toMap()),
+      );
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print('Server Error: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Network Error: $e');
+      return false;
     }
   }
 }

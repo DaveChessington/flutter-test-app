@@ -38,4 +38,19 @@ class User {
     updatedAt = user["updated_at"];
     deletedAt = user["deleted_at"];
   }
+
+  Map toMap(){
+    return {
+      "id":id,
+      "name":name,
+      "email":email,
+      "password":password,
+      "role":role.name,
+      "is_aproved":isAproved,
+      "profile_photo":profilePhoto,
+      "created_at":createdAt,
+      "updated_at":updatedAt,
+      "deleted_at":deletedAt,
+    };
+  }
 }

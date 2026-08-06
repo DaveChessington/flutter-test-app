@@ -1,28 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/API/api_service.dart';
 import 'package:my_app/models/User.dart';
 import 'package:my_app/role.dart';
 
 class Profile extends StatefulWidget {
-  const Profile({super.key});
+  const Profile({super.key, this.user});
+  final User? user;
 
   @override
   State<StatefulWidget> createState() => _ProfileState();
 }
 
 class _ProfileState extends State<Profile> {
-  User example = User(
-    id: 1,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    password: "secret_password",
-    role: Role.USER,
-    isAproved: false,
-    profilePhoto: "assets/placeholder.png",
-    createdAt: "2026-01-01",
-    updatedAt: "2026-07-23",
-    deletedAt: null,
-  );
-
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
   final TextEditingController _confirmController = TextEditingController();
@@ -30,7 +19,7 @@ class _ProfileState extends State<Profile> {
   @override
   void initState() {
     super.initState();
-    _nameController.text = example.name ?? "";
+    _nameController.text = widget.user?.name ?? "";
   }
 
   @override
@@ -43,11 +32,33 @@ class _ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
+    final apiService = ApiService();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          const Image(image: AssetImage("assets/placeholder.png"), height: 250),
+          if (widget.user?.id != null)
+            FutureBuilder<ImageProvider?>(
+              future: apiService.getAvatar(widget.user!.id!),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const SizedBox(
+                    height: 250,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                final imageProvider =
+                    snapshot.data ?? const AssetImage("assets/placeholder.png");
+                return Image(image: imageProvider, height: 250);
+              },
+            )
+          else
+            const Image(
+              image: AssetImage("assets/placeholder.png"),
+              height: 250,
+            ),
           const SizedBox(height: 15),
           const Text(
             "ACCOUNT",
@@ -91,7 +102,7 @@ class _ProfileState extends State<Profile> {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  Text(example.role.name),
+                  Text(widget.user?.role.name ?? Role.USER.name),
                 ],
               ),
               const SizedBox(width: 15),
@@ -106,7 +117,7 @@ class _ProfileState extends State<Profile> {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  Text(example.email ?? "No email provided"),
+                  Text(widget.user?.email ?? "No email provided"),
                 ],
               ),
             ],
@@ -126,7 +137,7 @@ class _ProfileState extends State<Profile> {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  Text(example.createdAt ?? "N/A"),
+                  Text(widget.user?.createdAt ?? "N/A"),
                 ],
               ),
               const SizedBox(width: 15),
@@ -141,7 +152,7 @@ class _ProfileState extends State<Profile> {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  Text(example.updatedAt ?? "N/A"),
+                  Text(widget.user?.updatedAt ?? "N/A"),
                 ],
               ),
             ],

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/API/api_service.dart';
 import 'package:my_app/login.dart';
+import 'package:my_app/models/User.dart';
 
 class Register extends StatefulWidget {
   @override
@@ -73,8 +75,34 @@ class _RegisterState extends State<Register> {
             ),
             const SizedBox(height: 25),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                if (_passController.text != _confirmController.text) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Passwords do not match")),
+                  );
+                  return;
+                }
+                else {
+                  // Handle registration logic here
+                  print("Name: ${_nameController.text}");
+                  print("Email: ${_emailController.text}");
+                  print("Password: ${_passController.text}");
+                  User newUser = User(
+                    name: _nameController.text,
+                    email: _emailController.text,
+                    password: _passController.text,
+                  );
 
+                  if (await ApiService().addUser(newUser)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("User registered successfully")),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Failed to register user")),
+                    );
+                  }
+                }
               },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50), 

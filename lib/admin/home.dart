@@ -18,8 +18,7 @@ class AdminHome extends StatelessWidget {
           return const Center(child: Text('No users found'));
         } else {
           return ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
+            //shrinkWrap: true,
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
               return CustomCardWidget(user: snapshot.data![index]);
