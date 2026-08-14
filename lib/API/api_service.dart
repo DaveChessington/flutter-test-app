@@ -6,7 +6,8 @@ import 'package:http/http.dart' as http;
 import 'package:my_app/models/User.dart';
 
 class ApiService {
-  final String baseURL = "http://davechessington.pythonanywhere.com";
+  final String baseURL =
+      "http://127.0.0.1:5000"; //"http://davechessington.pythonanywhere.com";
 
   Future login(String email, String password) async {
     try {
@@ -50,12 +51,12 @@ class ApiService {
     }
   }
 
-  Future getUserById(int id) async {
+  Future<User?> getUserById(int id) async {
     try {
       final response = await http.get(Uri.parse('$baseURL/users/$id'));
       if (response.statusCode == 200) {
         var res = jsonDecode(response.body) as Map<String, dynamic>;
-        User u = new User();
+        User u = User();
         u.fromMap(res);
         return u;
       } else {
