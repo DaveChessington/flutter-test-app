@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:my_app/API/api_service.dart';
+import 'package:my_app/models/User.dart';
 import 'package:my_app/navigation.dart';
 import 'package:my_app/register.dart';
 import 'package:my_app/role.dart';
@@ -77,11 +78,13 @@ class _LoginState extends State<Login> {
                   );
 
                   Role rol = Role.values.byName(response["user"]["role"]);
-                  int id = response["user"]["id"];
+                  User user = User();
+                  user.fromMap(response["user"]);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Navigation(chosenRole: rol, id: id),
+                      builder: (context) =>
+                          Navigation(chosenRole: rol, user: user),
                     ),
                   );
                 } catch (e) {

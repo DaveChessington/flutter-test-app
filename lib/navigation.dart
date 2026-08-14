@@ -4,9 +4,9 @@ import 'package:my_app/models/User.dart';
 import 'package:my_app/role.dart';
 
 class Navigation extends StatefulWidget {
-  const Navigation({super.key, required this.chosenRole, required this.id});
+  const Navigation({super.key, required this.chosenRole, required this.user});
   final Role chosenRole;
-  final int id;
+  final User user;
 
   @override
   State<StatefulWidget> createState() => _NavigationState();
@@ -21,14 +21,12 @@ class _NavigationState extends State<Navigation> {
   void initState() {
     super.initState();
 
-    final user = User(id: widget.id, role: widget.chosenRole);
-
     for (var d in Destination.values) {
       if (d.role == widget.chosenRole || d.role == null) {
         _navigationDestinations.add(
           NavigationDestination(icon: d.icon, label: d.name),
         );
-        _screens.add((d.widgetBuilder(user), d));
+        _screens.add((d.widgetBuilder(widget.user), d));
       }
     }
   }

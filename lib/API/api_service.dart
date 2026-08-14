@@ -1,12 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_app/models/User.dart';
 
 class ApiService {
-  final String baseURL =
-      "http://127.0.0.1:5000"; //"http://davechessington.pythonanywhere.com";
+  final String baseURL = "http://davechessington.pythonanywhere.com";
 
   Future login(String email, String password) async {
     try {
@@ -86,6 +86,25 @@ class ApiService {
     }
   }
 
+  Future updateProfilePhoto(int id, File file) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseURL/users/profile_photo/$id'),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: file,
+      );
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print('Server Error: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Network Error: $e');
+      return false;
+    }
+  }
+
   Future addUser(User user) async {
     try {
       final response = await http.post(
@@ -93,6 +112,21 @@ class ApiService {
         headers: {'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode(user.toMap()),
       );
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print('Server Error: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Network Error: $e');
+      return false;
+    }
+  }
+
+  Future deleteUser(int id) async {
+    try {
+      final response = await http.delete(Uri.parse('$baseURL/users/$id'));
       if (response.statusCode == 200) {
         return true;
       } else {
