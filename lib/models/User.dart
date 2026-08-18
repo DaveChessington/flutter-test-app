@@ -6,7 +6,7 @@ class User {
   String? name;
   String? email;
   String? password;
-  Enum role = Role.USER;
+  Role role = Role.USER;
   bool isAproved = false;
   String? profilePhoto;
   String? createdAt;

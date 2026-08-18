@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:my_app/API/api_service.dart';
+import 'package:my_app/admin/editForm.dart';
 import 'package:my_app/models/User.dart';
 import 'package:my_app/widgets/detail_window.dart';
 
@@ -14,18 +15,20 @@ class CustomCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final ApiService apiService = ApiService();
     // Fetch avatar image (base64 string) and convert to a widget.
-    final Future<Widget> avatarFuture = apiService.getAvatar(user.id ?? 0).then((data) {
-      if (data == null) {
-        return const Icon(Icons.person, size: 36);
-      }
-      try {
-        final Uint8List bytes = base64Decode(data as String);
-        return Image.memory(bytes, width: 36, height: 36, fit: BoxFit.cover);
-      } catch (_) {
-        // If not base64 or decoding fails, fallback to a placeholder icon.
-        return const Icon(Icons.person, size: 36);
-      }
-    });
+    final Future<Widget> avatarFuture = apiService.getAvatar(user.id ?? 0).then(
+      (data) {
+        if (data == null) {
+          return const Icon(Icons.person, size: 36);
+        }
+        try {
+          final Uint8List bytes = base64Decode(data as String);
+          return Image.memory(bytes, width: 36, height: 36, fit: BoxFit.cover);
+        } catch (_) {
+          // If not base64 or decoding fails, fallback to a placeholder icon.
+          return const Icon(Icons.person, size: 36);
+        }
+      },
+    );
 
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -69,7 +72,10 @@ class CustomCardWidget extends StatelessWidget {
                 children: [
                   Text(
                     user.name ?? 'Unnamed',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -84,8 +90,58 @@ class CustomCardWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.delete)),
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => EditForm(
+                      id: user.id,
+                      onClickSave: () {
+                        //call api service
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Usuario actualizado')),
+                        );
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.edit),
+            ),
+            IconButton(
+              onPressed: () {
+                showDialog(
+                  context: context, // Pass the current BuildContext
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Eliminar usuario'),
+                      content: const Text(
+                        '¿Estás seguro de que deseas eliminar este usuario?',
+                      ),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () {
+                            // Close the dialog
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Cancelar'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            // Add your action logic here, then close the dialog
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Eliminar'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              icon: const Icon(Icons.delete),
+            ),
           ],
         ),
       ),

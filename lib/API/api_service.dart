@@ -54,10 +54,14 @@ class ApiService {
   Future<User?> getUserById(int id) async {
     try {
       final response = await http.get(Uri.parse('$baseURL/users/$id'));
+      print('getUserById($id) status: ${response.statusCode}');
+      print('getUserById($id) body: ${response.body}');
       if (response.statusCode == 200) {
-        var res = jsonDecode(response.body) as Map<String, dynamic>;
+        var body = jsonDecode(response.body) as Map<String, dynamic>;
+        // Handle both {"id":...} and {"user":{"id":...}} response shapes
+        var userData = body.containsKey('user') ? body['user'] : body;
         User u = User();
-        u.fromMap(res);
+        u.fromMap(userData);
         return u;
       } else {
         print('Server Error: ${response.statusCode}');
@@ -68,6 +72,7 @@ class ApiService {
       return null;
     }
   }
+
 
   Future<ImageProvider?> getAvatar(int id) async {
     try {

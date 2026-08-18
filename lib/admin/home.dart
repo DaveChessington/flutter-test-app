@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/API/api_service.dart';
+import 'package:my_app/admin/editForm.dart';
 import 'package:my_app/widgets/custom_card.dart';
 
 class AdminHome extends StatelessWidget {
@@ -30,7 +31,10 @@ class AdminHome extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Add your action code here (e.g., open a dialog, increment counters)
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => EditForm(onClickSave: () {})),
+          );
         },
         backgroundColor: Colors.blue,
         child: const Icon(Icons.add),
