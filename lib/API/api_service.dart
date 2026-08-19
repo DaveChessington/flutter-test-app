@@ -2,12 +2,20 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_app/models/User.dart';
 
 class ApiService {
-  final String baseURL =
-      "http://127.0.0.1:5000"; //"http://davechessington.pythonanywhere.com"
+  String get baseURL {
+    final isDebug = dotenv.env['debug']?.toLowerCase() == 'true';
+    final key = isDebug ? 'API_BASE_URL_LOCAL' : 'API_BASE_URL_PRODUCTION';
+    final url = dotenv.env[key];
+    if (url == null || url.isEmpty) {
+      throw StateError('$key no está configurada en el archivo .env');
+    }
+    return url;
+  }
 
   // ─── Auth ────────────────────────────────────────────────────────────────
 

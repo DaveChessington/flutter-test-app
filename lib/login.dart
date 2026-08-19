@@ -62,12 +62,17 @@ class _LoginState extends State<Login> {
             const SizedBox(height: 25),
             ElevatedButton(
               onPressed: () async {
-                try {
-                  if (_userController.text.isEmpty ||
-                      _passController.text.isEmpty) {
-                    throw Exception("email y contraseña requeridos");
-                  }
+                if (_userController.text.isEmpty ||
+                    _passController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Ingresa tu correo y contraseña'),
+                    ),
+                  );
+                  return;
+                }
 
+                try {
                   print("Email: ${_userController.text}");
                   print("Password: ${_passController.text}");
 
@@ -76,6 +81,17 @@ class _LoginState extends State<Login> {
                     _userController.text,
                     _passController.text,
                   );
+
+                  if (response == null || response["user"] == null) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Correo o contraseña incorrectos'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
 
                   Role rol = Role.values.byName(response["user"]["role"]);
                   User user = User();
