@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -7,7 +7,9 @@ import 'package:my_app/models/User.dart';
 
 class ApiService {
   final String baseURL =
-      "http://127.0.0.1:5000"; //"http://davechessington.pythonanywhere.com";
+      "http://127.0.0.1:5000"; //"http://davechessington.pythonanywhere.com"
+
+  // ─── Auth ────────────────────────────────────────────────────────────────
 
   Future login(String email, String password) async {
     try {
@@ -17,7 +19,6 @@ class ApiService {
         body: jsonEncode({'email': email, 'password': password}),
       );
       if (response.statusCode == 200) {
-        // Manually decode the raw string body into a Dart Map
         return jsonDecode(response.body) as Map<String, dynamic>;
       } else {
         print('Server Error: ${response.statusCode}');
@@ -29,6 +30,8 @@ class ApiService {
     }
   }
 
+  // ─── Users ───────────────────────────────────────────────────────────────
+
   Future getUsers() async {
     try {
       List users = [];
@@ -36,7 +39,7 @@ class ApiService {
       if (response.statusCode == 200) {
         Map res = jsonDecode(response.body) as Map<String, dynamic>;
         for (var i in res["users"]) {
-          User u = new User();
+          User u = User();
           u.fromMap(i);
           users.add(u);
         }
@@ -73,31 +76,12 @@ class ApiService {
     }
   }
 
-
-  Future<ImageProvider?> getAvatar(int id) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseURL/users/profile_photo/$id'),
-      );
-      if (response.statusCode == 200) {
-        // Use MemoryImage with the response bytes for binary image data
-        return MemoryImage(response.bodyBytes);
-      } else {
-        print('Server Error: ${response.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      print('Network Error: $e');
-      return null;
-    }
-  }
-
-  Future updateProfilePhoto(int id, File file) async {
+  Future<bool> updateUser(int id, User user) async {
     try {
       final response = await http.put(
-        Uri.parse('$baseURL/users/profile_photo/$id'),
+        Uri.parse('$baseURL/users/$id'),
         headers: {'Content-Type': 'application/json; charset=UTF-8'},
-        body: file,
+        body: jsonEncode(user.toMap()),
       );
       if (response.statusCode == 200) {
         return true;
@@ -111,7 +95,7 @@ class ApiService {
     }
   }
 
-  Future addUser(User user) async {
+  Future<bool> addUser(User user) async {
     try {
       final response = await http.post(
         Uri.parse('$baseURL/users'),
@@ -130,13 +114,85 @@ class ApiService {
     }
   }
 
-  Future deleteUser(int id) async {
+  Future<int?> createUser(User user) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseURL/users'),
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode(user.toMap()),
+      );
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        print('Server Error: ${response.statusCode}');
+        return null;
+      }
+
+      final body = jsonDecode(response.body);
+      if (body is Map<String, dynamic>) {
+        final data = body['user'] is Map<String, dynamic>
+            ? body['user'] as Map<String, dynamic>
+            : body;
+        return data['id'] as int?;
+      }
+      return null;
+    } catch (e) {
+      print('Network Error: $e');
+      return null;
+    }
+  }
+
+  Future<bool> deleteUser(int id) async {
     try {
       final response = await http.delete(Uri.parse('$baseURL/users/$id'));
       if (response.statusCode == 200) {
         return true;
       } else {
         print('Server Error: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Network Error: $e');
+      return false;
+    }
+  }
+
+  // ─── Avatar ──────────────────────────────────────────────────────────────
+
+  Future<ImageProvider?> getAvatar(int id) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseURL/users/profile_photo/$id'),
+      );
+      if (response.statusCode == 200) {
+        return MemoryImage(response.bodyBytes);
+      } else {
+        print('Server Error: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Network Error: $e');
+      return null;
+    }
+  }
+
+  /// Upload profile photo as multipart/form-data (web-compatible, no dart:io).
+  Future<bool> updateProfilePhoto(
+    int id,
+    Uint8List bytes,
+    String filename,
+  ) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseURL/users/profile_photo/$id'),
+      );
+      request.files.add(
+        http.MultipartFile.fromBytes('photo', bytes, filename: filename),
+      );
+      final streamed = await request.send();
+      if (streamed.statusCode == 200 || streamed.statusCode == 201) {
+        return true;
+      } else {
+        print('Server Error: ${streamed.statusCode}');
         return false;
       }
     } catch (e) {

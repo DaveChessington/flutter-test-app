@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:my_app/API/api_service.dart';
 import 'package:my_app/admin/editForm.dart';
@@ -7,28 +5,16 @@ import 'package:my_app/models/User.dart';
 import 'package:my_app/widgets/detail_window.dart';
 
 class CustomCardWidget extends StatelessWidget {
-  const CustomCardWidget({super.key, required this.user});
+  const CustomCardWidget({super.key, required this.user, this.onRefresh});
 
   final User user;
+
+  /// Called after a successful edit or delete so the parent can refresh its list.
+  final VoidCallback? onRefresh;
 
   @override
   Widget build(BuildContext context) {
     final ApiService apiService = ApiService();
-    // Fetch avatar image (base64 string) and convert to a widget.
-    final Future<Widget> avatarFuture = apiService.getAvatar(user.id ?? 0).then(
-      (data) {
-        if (data == null) {
-          return const Icon(Icons.person, size: 36);
-        }
-        try {
-          final Uint8List bytes = base64Decode(data as String);
-          return Image.memory(bytes, width: 36, height: 36, fit: BoxFit.cover);
-        } catch (_) {
-          // If not base64 or decoding fails, fallback to a placeholder icon.
-          return const Icon(Icons.person, size: 36);
-        }
-      },
-    );
 
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -36,6 +22,7 @@ class CustomCardWidget extends StatelessWidget {
         MaterialPageRoute(builder: (_) => DetailScreen(user: user)),
       ),
       child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(12),
@@ -45,9 +32,10 @@ class CustomCardWidget extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Avatar widget built from a future.
-            FutureBuilder<Widget>(
-              future: avatarFuture,
+            // ── Avatar ──────────────────────────────────────────────────
+            // getAvatar() returns ImageProvider? — use directly as backgroundImage.
+            FutureBuilder<ImageProvider?>(
+              future: apiService.getAvatar(user.id ?? 0),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const SizedBox(
@@ -56,16 +44,20 @@ class CustomCardWidget extends StatelessWidget {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   );
                 }
-                if (snapshot.hasError || !snapshot.hasData) {
-                  return const Icon(Icons.error, size: 36);
-                }
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: snapshot.data!,
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundImage: snapshot.data,
+                    child: snapshot.data == null
+                        ? const Icon(Icons.person, size: 20)
+                        : null,
+                  ),
                 );
               },
             ),
-            // Text content (title & subtitle).
+
+            // ── Text ─────────────────────────────────────────────────────
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,50 +81,62 @@ class CustomCardWidget extends StatelessWidget {
                 ],
               ),
             ),
+
             const SizedBox(width: 8),
+
+            // ── Edit ─────────────────────────────────────────────────────
             IconButton(
+              tooltip: 'Editar',
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => EditForm(
                       id: user.id,
-                      onClickSave: () {
-                        //call api service
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Usuario actualizado')),
-                        );
-                        Navigator.pop(context);
-                      },
+                      onClickSave: () => onRefresh?.call(),
                     ),
                   ),
                 );
               },
               icon: const Icon(Icons.edit),
             ),
+
+            // ── Delete ───────────────────────────────────────────────────
             IconButton(
+              tooltip: 'Eliminar',
               onPressed: () {
                 showDialog(
-                  context: context, // Pass the current BuildContext
-                  builder: (BuildContext context) {
+                  context: context,
+                  builder: (BuildContext dialogContext) {
                     return AlertDialog(
                       title: const Text('Eliminar usuario'),
-                      content: const Text(
-                        '¿Estás seguro de que deseas eliminar este usuario?',
+                      content: Text(
+                        '¿Eliminar a "${user.name ?? 'este usuario'}"? Esta acción no se puede deshacer.',
                       ),
                       actions: <Widget>[
                         TextButton(
-                          onPressed: () {
-                            // Close the dialog
-                            Navigator.of(context).pop();
-                          },
+                          onPressed: () => Navigator.of(dialogContext).pop(),
                           child: const Text('Cancelar'),
                         ),
                         TextButton(
-                          onPressed: () {
-                            // Add your action logic here, then close the dialog
-                            Navigator.of(context).pop();
+                          onPressed: () async {
+                            Navigator.of(dialogContext).pop();
+                            final success =
+                                await apiService.deleteUser(user.id ?? 0);
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(success
+                                    ? 'Usuario eliminado'
+                                    : 'Error al eliminar el usuario'),
+                                backgroundColor:
+                                    success ? Colors.green : Colors.red,
+                              ),
+                            );
+                            if (success) onRefresh?.call();
                           },
+                          style: TextButton.styleFrom(
+                              foregroundColor: Colors.red),
                           child: const Text('Eliminar'),
                         ),
                       ],

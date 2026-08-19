@@ -76,32 +76,48 @@ class _RegisterState extends State<Register> {
             const SizedBox(height: 25),
             ElevatedButton(
               onPressed: () async {
-                if (_passController.text != _confirmController.text) {
+                if (_nameController.text.isEmpty ||
+                    _emailController.text.isEmpty ||
+                    _passController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Passwords do not match")),
+                    const SnackBar(
+                        content: Text('Todos los campos son obligatorios')),
                   );
                   return;
                 }
-                else {
-                  // Handle registration logic here
-                  print("Name: ${_nameController.text}");
-                  print("Email: ${_emailController.text}");
-                  print("Password: ${_passController.text}");
-                  User newUser = User(
-                    name: _nameController.text,
-                    email: _emailController.text,
-                    password: _passController.text,
+                if (_passController.text != _confirmController.text) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Las contraseñas no coinciden')),
                   );
+                  return;
+                }
 
-                  if (await ApiService().addUser(newUser)) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("User registered successfully")),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Failed to register user")),
-                    );
-                  }
+                final newUser = User(
+                  name: _nameController.text,
+                  email: _emailController.text,
+                  password: _passController.text,
+                );
+
+                final success = await ApiService().addUser(newUser);
+                if (!context.mounted) return;
+
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Usuario registrado exitosamente'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  // Return to Login after a brief delay so the user sees the SnackBar
+                  await Future.delayed(const Duration(seconds: 1));
+                  if (context.mounted) Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Error al registrar usuario'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
                 }
               },
               style: ElevatedButton.styleFrom(
